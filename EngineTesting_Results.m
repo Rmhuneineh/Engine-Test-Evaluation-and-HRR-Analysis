@@ -1,9 +1,9 @@
 %% Engine
-n_engine = 1600*ones(4, 1)*2*pi/60; % [rad/s] Engine Speed
+n_engine = 1600/60; % [revolution/s] Engine Speed
 P_dyno = [3.35; 8.38; 16.75; 21.78]; % [kW] Measured Power
 M_dyno = [20; 50.02; 99.99; 129.99]; % [Nm] Measured Torque
-qm_fuel = [1.723; 2.485; 4.072; 5.063]/3600; % [kg/s]
-qm_air = [134.75; 81.96; 97.71; 111.36]/3600; % [kg/s]
+qm_fuel = [1.723; 2.485; 4.072; 5.063]; % [kg/h]
+qm_air = [134.75; 81.96; 97.71; 111.36]; % [kg/h]
 qm_EGR = [2.781567151; 8.476373487; 9.539912943; 10.30479605]; % [g/s]
 
 %% Ambient
