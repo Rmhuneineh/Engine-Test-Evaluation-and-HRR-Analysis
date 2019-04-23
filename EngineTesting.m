@@ -30,10 +30,25 @@ md_f = qm_fuel/3600; % [kg/s] Fuel mass flow rate
 m_f = md_f/(n_engine); % [kg] Fuel mass
 eta_f = P0*1e3./(md_f*Hip); % [-] Fuel Conversion Efficiency
 
+figure(1)
+plot(M0, eta_f)
+title('Fuel Conversion Efficieny vs Corrected Torque')
+xlabel('\tau_0')
+ylabel('\eta_f')
 %% Brake Specific Fuel Consumption (bsfc)
 bsfc = qm_fuel*1e3./P0; % [g/kW.h]
 
+figure(2)
+plot(M0, bsfc)
+title('Brake Specific Fuel Consumption vs Corrected Torque')
+xlabel('\tau_0')
+ylabel('bsfc')
 %% Volumetric Efficiency
 ro = (p_i_MF+p_a)*1e5./(R_a*(T_a+273)); % [kg/m^3] Density
 lambdav = (md_a+md_EGR)./(ro*nc*Vd*n_engine/2); % [-]
 
+figure(3)
+plot(M0, lambdav)
+title('Volumetric Efficiency vs Corrected Torque')
+xlabel('\tau_0')
+ylabel('\lambda_v')
