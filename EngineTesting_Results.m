@@ -7,9 +7,9 @@ qm_air = [134.75; 81.96; 97.71; 111.36]/3600; % [kg/s]
 qm_EGR = [2.781567151; 8.476373487; 9.539912943; 10.30479605]; % [g/s]
 
 %% Ambient
-p_baro = [1000.12; 1000.08; 1000.03; 1000]*1e-3; % [bar] Barometric Pressure
-T_snorkle = [25.2; 25.3; 25.3; 25.5]; % [C] Temperature
-Rel_Hum = [41.35; 40.3; 42.24; 48.35]; % [%] Relative Humidity
+p_a = [1000.12; 1000.08; 1000.03; 1000]*1e-3; % [bar] Barometric Pressure
+T_a = [25.2; 25.3; 25.3; 25.5]; % [C] Temperature
+Rel_Hum = [41.35; 40.3; 42.24; 48.35]/100; % [%] Relative Humidity
 
 %% Intake Manifold
 T_i_MF = [27.82; 64.21; 77.7; 78.14]; % [C]
@@ -30,8 +30,8 @@ R_f = 417; % [J/kg]
 R_a = 287.05; % [J/kg]
 
 %% Engine Characteristics
-cr = 52; % [mm]
-crl = 158; % [mm]
-bore = 95.8; % [mm]
+cr = 52*1e-3; % [m]
+crl = 0.158; % [m]
+bore = 95.8*1e-3; % [m]
 epsilon = 14.6; % [-]
 nc = 4; % [-]
