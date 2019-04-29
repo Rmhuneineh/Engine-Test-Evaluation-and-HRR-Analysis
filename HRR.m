@@ -42,8 +42,14 @@ T_cyl = p_cyl1*1e5.*V./(m_a*R_a + m_egr*R_egr) + 273; % [K] in-cylinder temperat
 K = 1.338 - 6*1e-5*T_cyl + 1e-8*T_cyl.^2; % [-] Polytropic Coefficient
 
 %% Graphically
+figure(1)
+hold on
+plot(theta(theta>=320 & theta<=430), p_cyl1(theta>=320 & theta<=430))
+plot(theta(theta>=320 & theta<=430), inj1(theta>=320 & theta<=430))
+ylim([0 max(p_cyl1)])
 SOI = 348.7; % [deg] Start Of Injection
 SOC = 358; % [deg] Start Of Combustion
+ID = SOC - SOI; % [deg] Ignition Delay
 
 %% Pressure
 m = 1.45; % [-] Compression Polytropic Coefficient
@@ -63,6 +69,7 @@ P(3602:5402) = P(3601)*(Vc./V34).^mp;
 P(5403:7200) = P(5402);
 P(theta<=SOC) = p_cyl1(theta<=SOC);
 P(theta>SOC) = P(theta==SOC)*(V(theta==SOC)./V(theta>SOC)).^mp;
+
 %% Mass Fraction Burned
 for i = 2:length(theta)
        if(theta(i) <= SOI)
@@ -76,17 +83,15 @@ end
 dQ_ch = Vdp + pdV;
 xb = dQ_ch/m_f/Hip;
 
-figure(1)
-hold on
-plot(theta(theta>=320 & theta<=430), p_cyl1(theta>=320 & theta<=430))
+
 plot(theta(theta>=320 & theta<=430), P(theta>=320 & theta<=430))
-plot(theta(theta>=320 & theta<=430), inj1(theta>=320 & theta<=430))
-ylim([0 max(p_cyl1)])
 yyaxis right
 plot(theta(theta>=320 & theta<=430), xb(theta>=320 & theta<=430), ':', 'LineWidth', 1.5)
 ylim([0 1])
 plot([SOI SOI], [0 1], 'm--')
 plot([SOC SOC], [0 1], 'k--')
 plot([362.18 362.18], [0 1], 'g--')
+plot([360.25 360.25], [0 1], 'c--')
+plot([376.8 376.8], [0 1], 'c--')
 legend('PCYL1', 'p_m_o_t_o_r_e_d', 'INJ1', 'x_b')
 grid on
