@@ -6,7 +6,7 @@ clc
 %% Load Data
 [NUM, ~, ~] = xlsread('Report2_datasheet_79', 'Data');
 theta = NUM(:, 1)+360; % [deg]
-p_cyl1 = NUM(:, 2); % [bar]
+p_cyl1 = NUM(:, 2) + 1000.03*1e-3; % [bar]
 inj1 = NUM(:, 3); % [-]
 
 %% Engine Characteristics
@@ -47,8 +47,10 @@ hold on
 plot(theta(theta>=320 & theta<=430), p_cyl1(theta>=320 & theta<=430))
 plot(theta(theta>=320 & theta<=430), inj1(theta>=320 & theta<=430))
 ylim([0 max(p_cyl1)])
+xlim([320 430])
+grid on
 SOI = 348.7; % [deg] Start Of Injection
-SOC = 358; % [deg] Start Of Combustion
+SOC = 353; % [deg] Start Of Combustion
 ID = SOC - SOI; % [deg] Ignition Delay
 
 %% Pressure
@@ -72,12 +74,12 @@ P(theta>SOC) = P(theta==SOC)*(V(theta==SOC)./V(theta>SOC)).^mp;
 
 %% Mass Fraction Burned
 for i = 2:length(theta)
-       if(theta(i) <= SOI)
+       if(theta(i) <= SOC)
           Vdp(i) = 0;
           pdV(i) = 0;
        else
-          Vdp(i) = trapz([p_cyl1(i-1) p_cyl1(i)], [V(i-1) V(i)]/(K(i)-1)) + Vdp(i-1);
-          pdV(i) = trapz([V(i-1) V(i)], [p_cyl1(i-1) p_cyl1(i)]*K(i)/(K(i)-1)) + pdV(i-1);
+          Vdp(i) = trapz([(p_cyl1(i-1)+P(i-1)) (p_cyl1(i)+P(i))], [V(i-1) V(i)]/(K(i)-1)) + Vdp(i-1);
+          pdV(i) = trapz([V(i-1) V(i)], [(p_cyl1(i-1)+P(i-1)) (p_cyl1(i)+P(i))]*K(i)/(K(i)-1)) + pdV(i-1);
        end
 end
 dQ_ch = Vdp + pdV;
@@ -92,6 +94,6 @@ plot([SOI SOI], [0 1], 'm--')
 plot([SOC SOC], [0 1], 'k--')
 plot([362.18 362.18], [0 1], 'g--')
 plot([360.25 360.25], [0 1], 'c--')
-plot([376.8 376.8], [0 1], 'c--')
-legend('PCYL1', 'p_m_o_t_o_r_e_d', 'INJ1', 'x_b')
+plot([377.1 377.1], [0 1], 'c--')
+legend('PCYL1', 'INJ1', 'p_m_o_t_o_r_e_d', 'x_b', 'SOI', 'SOC', 'MFB50', 'MFB10', 'MFB90')
 grid on
