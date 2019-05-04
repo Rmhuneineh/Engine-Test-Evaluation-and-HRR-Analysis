@@ -6,7 +6,7 @@ clc
 %% Load Data
 [NUM, ~, ~] = xlsread('Report2_datasheet_79', 'Data');
 theta = NUM(:, 1)+360; % [deg]
-p_cyl1 = NUM(:, 2) + 1000.03*1e-3; % [bar]
+p_cyl1 = NUM(:, 2); % [bar]
 inj1 = NUM(:, 3); % [-]
 
 %% Engine Characteristics
@@ -24,7 +24,7 @@ qm_f = 4.072; % [kg/h] Fuel mass flow rate
 qm_egr = 9.533991; % [g/s]
 cp_egr = 1.038*1e3; % [J/(kg.K)]
 R_a = 287.05; % [J/kg]
-Hip = 44.5; % [J/kg]
+Hip = 44.5*1e6; % [J/kg]
 %% Set Parameters
 lambda = cr/crl;
 Vd = pi*bore^2/4*(2*cr); % [m^3]
@@ -34,11 +34,11 @@ x = cr*((1-cosd(theta)) + 1/lambda*(1-sqrt(1-lambda^2*sind(theta).^2))) + Vc/are
 V = area*x; % [m^3] cylinder volume vs theta
 
 %% Temperature and Elastic Constant
-m_a = qm_a/60/nc/rpm; % [kg/(cycle.cylinder)] Air mass
-m_f = 2*qm_f/60/nc/(rpm*2*pi/60); % [kg/(cycle.cylinder)] Fuel mass flow rate
-m_egr = qm_egr*60/1000/rpm; % [kg/rad.cylinder)] EGR mass
+m_a = 2*qm_a/60/nc/rpm; % [kg/(cycle.cylinder)] Air mass
+m_f = 2*qm_f/60/nc/rpm; % [kg/(cycle.cylinder)] Fuel mass flow rate
+m_egr = 2*qm_egr*60/1000/nc/rpm; % [kg/cycle.cylinder)] EGR mass
 R_egr = cp_egr*(1-1/1.4); % [J/(kg.K)] EGR elastic constant
-T_cyl = p_cyl1*1e5.*V./(m_a*R_a + m_egr*R_egr) + 273; % [K] in-cylinder temperature
+T_cyl = p_cyl1*1e5.*V./(m_a*R_a + m_egr*R_egr); % [K] in-cylinder temperature
 K = 1.338 - 6*1e-5*T_cyl + 1e-8*T_cyl.^2; % [-] Polytropic Coefficient
 
 %% Graphically
@@ -47,10 +47,9 @@ hold on
 plot(theta(theta>=320 & theta<=430), p_cyl1(theta>=320 & theta<=430))
 plot(theta(theta>=320 & theta<=430), inj1(theta>=320 & theta<=430))
 ylim([0 max(p_cyl1)])
-xlim([320 430])
 grid on
 SOI = 348.7; % [deg] Start Of Injection
-SOC = 353; % [deg] Start Of Combustion
+SOC = 356.5; % [deg] Start Of Combustion
 ID = SOC - SOI; % [deg] Ignition Delay
 
 %% Pressure
@@ -73,27 +72,32 @@ P(theta<=SOC) = p_cyl1(theta<=SOC);
 P(theta>SOC) = P(theta==SOC)*(V(theta==SOC)./V(theta>SOC)).^mp;
 
 %% Mass Fraction Burned
+time(1) = 0;
+Q_ch(1) = 0;
 for i = 2:length(theta)
-       if(theta(i) <= SOC)
-          Vdp(i) = 0;
-          pdV(i) = 0;
-       else
-          Vdp(i) = trapz([(p_cyl1(i-1)+P(i-1)) (p_cyl1(i)+P(i))], [V(i-1) V(i)]/(K(i)-1)) + Vdp(i-1);
-          pdV(i) = trapz([V(i-1) V(i)], [(p_cyl1(i-1)+P(i-1)) (p_cyl1(i)+P(i))]*K(i)/(K(i)-1)) + pdV(i-1);
-       end
+    time(i) = (theta(i)-theta(i-1))*pi/180/(rpm*2*pi/60) + time(i-1);
+    Vdp(i) = V(i)*(p_cyl1(i)-p_cyl1(i-1))*1e5;
+    pdV(i) = p_cyl1(i)*1e5*(V(i)-V(i-1));
+    dQ_ch(i) = Vdp(i)/(K(i)-1) + pdV(i)*K(i)/(K(i)-1);
+    if(theta(i) <= SOI)
+        Q_ch(i) = 0;
+    else
+        Q_ch(i) = trapz([time(i-1) time(i), dQ_ch(i-1) dQ_ch(i)]) + Q_ch(i-1);
+
+    end
 end
-dQ_ch = Vdp + pdV;
-xb = dQ_ch/m_f/Hip;
+xb = time(end)*10*Q_ch/m_f/Hip;
 
 
-plot(theta(theta>=320 & theta<=430), P(theta>=320 & theta<=430))
+plot(theta(xb<max(xb)), P(xb<max(xb)))
 yyaxis right
-plot(theta(theta>=320 & theta<=430), xb(theta>=320 & theta<=430), ':', 'LineWidth', 1.5)
-ylim([0 1])
+ylim([0 max(xb)])
+xlim([320 theta(xb==max(xb))])
+plot(theta(xb<max(xb)), xb(xb<max(xb)), ':', 'LineWidth', 1.5)
 plot([SOI SOI], [0 1], 'm--')
 plot([SOC SOC], [0 1], 'k--')
 plot([362.18 362.18], [0 1], 'g--')
 plot([360.25 360.25], [0 1], 'c--')
-plot([377.1 377.1], [0 1], 'c--')
+plot([373.1 373.1], [0 1], 'c--')
 legend('PCYL1', 'INJ1', 'p_m_o_t_o_r_e_d', 'x_b', 'SOI', 'SOC', 'MFB50', 'MFB10', 'MFB90')
 grid on
